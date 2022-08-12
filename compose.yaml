@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    platform: linux/x86_64
+    container_name: db
+    image: mysql:8.0.23
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      # 初期データを投入するSQLが格納されている場所
+      - ./db/mysql_init:/docker-entrypoint-initdb.d
+      # 永続化するときにマウントする場所
+      - ./db/db_data:/var/lib/mysql
+      # SQLファイルなどを置く場所
+      - ./db/import:/tmp
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    tty: true # コンテナの永続化
+    ports: # ホストOSのポートとコンテナのポート番号 
+        - "8080:8080"
+    volumes:
+        - ./backend/public:/go/src/backend/public
+    container_name: backend
+    depends_on: 
+        - db
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/public_html:/var/www/frontend/public_html
+      # - ./frontend/public_html/node_modules:/var/www/public_html/node_modules
+      # - ./client/node_modules:/var/www/html/app/react_basic/client/node_modules
+    container_name: frontend
+    tty: true
+    ports:
+      - 3000:3000

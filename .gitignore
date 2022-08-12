@@ -1,0 +1,7 @@
+.DS_Store
+db/init/*
+db/db_data/*
+backend/public/*
+frontend/public_html/*
+
+!.gitkeep
